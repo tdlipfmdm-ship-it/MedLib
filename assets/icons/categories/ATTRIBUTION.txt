@@ -1,0 +1,7 @@
+﻿Category icons source:
+- Project: Bootstrap Icons
+- Repository: https://github.com/twbs/icons
+- Raw source used: https://raw.githubusercontent.com/twbs/icons/main/icons/*.svg
+- License: MIT
+
+Downloaded and stored locally for homepage category pictograms.

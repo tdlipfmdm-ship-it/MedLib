@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="t-3b994de5-c16c-4852-933f-2bfef76d3f67">
+  <title id="t-3b994de5-c16c-4852-933f-2bfef76d3f67">Lukmançykyk genetikasy</title>
+  <defs>
+    <linearGradient id="g-3b994de5-c16c-4852-933f-2bfef76d3f67" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="hsl(32 64% 44%)"/>
+      <stop offset="100%" stop-color="hsl(80 68% 34%)"/>
+    </linearGradient>
+    <linearGradient id="b-3b994de5-c16c-4852-933f-2bfef76d3f67" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="hsl(144 76% 84% / 0.92)"/>
+      <stop offset="100%" stop-color="hsl(32 80% 94% / 0.88)"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="6" y="6" width="84" height="84" rx="18" fill="url(#g-3b994de5-c16c-4852-933f-2bfef76d3f67)"/>
+  <rect x="12" y="12" width="72" height="72" rx="15" fill="url(#b-3b994de5-c16c-4852-933f-2bfef76d3f67)"/>
+
+  <circle cx="48" cy="36" r="18" fill="hsl(80 75% 27% / 0.88)"/>
+  <path d="M48 24v9h9v6h-9v9h-6v-9h-9v-6h9v-9z" fill="#fff"/>
+
+  <rect x="20" y="56" width="56" height="20" rx="8" fill="hsl(32 56% 30% / 0.9)"/>
+  <text x="48" y="70" text-anchor="middle" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="700" font-size="14" fill="#fff">LG</text>
+</svg>
