@@ -1,0 +1,35 @@
+﻿<!doctype html><html lang='tk'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Hasap | Lukman&#231;ylyk sanly kitaphanasy</title><link rel='stylesheet' href='assets/style.css'></head><body>
+<a class='skip-link' href='#accountPage'>Mazmuna geç</a>
+<header class='hero'><div class='hero-in'><h1>Ulanyjy hasaby</h1><p>Profili&#328;iz, abuna maglumatlary we rugsatlar.</p><nav class='nav'><a href='index.html'>Ba&#351; sahypa</a><a href='books.html'>Kitaplar</a><a href='categories.html'>Lukmançylyk ugurlary</a><a href='languages.html'>Diller</a></nav></div></header>
+<main class='wrap auth-page' id='accountPage'>
+<section class='panel'>
+  <h2>Profil</h2>
+  <div class='account-meta'>
+    <div class='account-item'><b>Doly ady:</b> <span id='accountFullName'>-</span></div>
+    <div class='account-item'><b>Ulanyjy ady:</b> <span id='accountUsername'>-</span></div>
+    <div class='account-item'><b>Rol:</b> <span class='role-pill' id='accountRole'>-</span></div>
+    <div class='account-item'><b>Abuna:</b> <span class='sub-pill' id='accountSubscription'>-</span></div>
+    <div class='account-item'><small class='sub-note' id='accountSubscriptionHint'>-</small></div>
+  </div>
+  <div class='account-actions'><button id='renewSelfBtn' type='button'>+1 a&#253; uzalt</button> <button id='logoutBtn' type='button'>&#199;ykyş et</button></div>
+</section>
+
+<section class='panel hidden' id='editorTools'>
+  <h2>Redaktor gurallary</h2>
+  <p>Sa&#253;lanan kitaplary JSON formatynda &#253;&#252;kl&#228;p aly&#328;.</p>
+  <button id='exportFavBtn' type='button'>Sa&#253;lananlary eksport et</button>
+</section>
+
+<section class='panel hidden' id='adminTools'>
+  <h2>Admin dolandyry&#351;</h2>
+  <p>Ulanyjylary&#328; rollaryny &#252;&#253;tgedi&#328; &#253;a-da pozu&#328;.</p>
+  <div class='user-table-wrap'>
+    <table class='user-table'>
+      <thead><tr><th>Ady</th><th>Ulanyjy ady</th><th>Rol</th><th>Abuna</th><th>Hereket</th></tr></thead>
+      <tbody id='userRows'></tbody>
+    </table>
+  </div>
+</section>
+</main>
+<script src='assets/site-config.js'></script><script src='assets/app.js' defer></script></body></html>
+

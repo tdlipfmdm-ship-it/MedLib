@@ -1,0 +1,26 @@
+﻿<!doctype html><html lang='tk'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Hasap d&#246;retmek | Lukman&#231;ylyk sanly kitaphanasy</title><link rel='stylesheet' href='assets/style.css'></head><body>
+<a class='skip-link' href='#mainContent'>Mazmuna geç</a>
+<header class='hero'><div class='hero-in'><h1>T&#228;ze hasap a&#231;mak</h1><p>Lukman&#231;ylyk sanly kitaphanasyna ulanyjy hasabyny d&#246;redi&#328;.</p><nav class='nav'><a href='index.html'>Ba&#351; sahypa</a><a href='books.html'>Kitaplar</a><a href='categories.html'>Lukmançylyk ugurlary</a><a href='languages.html'>Diller</a></nav></div></header>
+<main class='wrap auth-page' id='mainContent'>
+<section class='panel'>
+  <h2>Hasap d&#246;retmek</h2>
+  <p>Maglumatlary doly dolduryp hasap a&#231;y&#328;.</p>
+  <form id='registerForm' class='auth-form'>
+    <label>Doly ady<input id='regFullName' type='text' autocomplete='name' required></label>
+    <label>Ulanyjy ady<input id='regUsername' type='text' autocomplete='username' required></label>
+    <label>A&#231;ar s&#246;z<input id='regPassword' type='password' autocomplete='new-password' required></label>
+    <label>A&#231;ar s&#246;zi t&#228;zeden<input id='regConfirmPassword' type='password' autocomplete='new-password' required></label>
+    <label>Rol
+      <select id='regRole'>
+        <option value='reader'>Okyjy</option>
+        <option value='editor'>Redaktor</option>
+        <option value='admin'>Admin</option>
+      </select>
+    </label>
+    <button type='submit'>Hasap d&#246;ret</button>
+    <div id='registerMsg' class='msg'></div>
+  </form>
+</section>
+</main>
+<script src='assets/site-config.js'></script><script src='assets/app.js' defer></script></body></html>
+

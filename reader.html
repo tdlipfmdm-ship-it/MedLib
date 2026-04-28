@@ -1,0 +1,70 @@
+﻿<!doctype html>
+<html lang='tk'>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <meta http-equiv='Content-Security-Policy' content="connect-src 'self' https://translate.googleapis.com https://translate.google.com https://clients5.google.com;">
+  <link rel='dns-prefetch' href='//translate.googleapis.com'>
+  <link rel='dns-prefetch' href='//translate.google.com'>
+  <link rel='dns-prefetch' href='//clients5.google.com'>
+  <link rel='preconnect' href='https://translate.googleapis.com' crossorigin>
+  <link rel='preconnect' href='https://translate.google.com' crossorigin>
+  <link rel='preconnect' href='https://clients5.google.com' crossorigin>
+  <title>Lukmançylyk sanly kitaphanasy | PDF okyjy</title>
+  <link rel='stylesheet' href='assets/reader.css'>
+</head>
+<body>
+  <header class='reader-topbar'>
+    <div class='reader-topbar-inner'>
+      <div class='reader-brand'>
+        <a class='reader-back' id='backLink' href='index.html'>Yza</a>
+        <div class='reader-title-wrap'>
+          <h1 id='readerTitle'>PDF okyjy</h1>
+          <p>Diňe okamak üçin resmi görnüş. Tigirçek bilen sahypa geçiriň, Ctrl/Alt + tigirçek bilen ulaldyp-kiçeldiň. Eljagaza režiminde sahypany tutup süýşürmek mümkin. Göçürmek, çap etmek we ýüklemek çäklendirilen.</p>
+        </div>
+      </div>
+
+      <div class='reader-controls' aria-label='Reader controls'>
+        <button type='button' id='prevBtn'>Öňki</button>
+        <label class='reader-page-label'>
+          Sahypa
+          <input id='pageInput' type='number' min='1' step='1' value='1'>
+        </label>
+        <span id='pageCount'>/ 0</span>
+        <button type='button' id='nextBtn'>Soňky</button>
+
+        <button type='button' id='zoomOutBtn'>-</button>
+        <span id='zoomText'>100%</span>
+        <button type='button' id='zoomInBtn'>+</button>
+
+        <button type='button' id='fitBtn'>Giňlige syg</button>
+        <button type='button' id='actualBtn'>Hakyky ölçeg</button>
+      </div>
+
+      <div class='reader-search' aria-label='Search controls'>
+        <label class='reader-search-label' for='searchInput'>Gözleg</label>
+        <input id='searchInput' type='text' autocomplete='off' placeholder='Söz ýa-da sözlem...'>
+        <button type='button' id='searchBtn'>Tap</button>
+        <button type='button' id='prevMatchBtn' title='Öňki tapylan'>◀</button>
+        <span id='matchStat'>0/0</span>
+        <button type='button' id='nextMatchBtn' title='Indiki tapylan'>▶</button>
+        <button type='button' id='clearSearchBtn'>Arassala</button>
+      </div>
+    </div>
+  </header>
+
+  <main class='reader-main'>
+    <section class='reader-stage' id='readerStage'>
+      <div class='reader-loading' id='loadingBox'>PDF açylýar...</div>
+      <div class='reader-error hidden' id='errorBox'></div>
+      <canvas id='pdfCanvas' aria-label='PDF page'></canvas>
+      <div class='reader-watermark'>Lukmançylyk sanly kitaphanasy</div>
+    </section>
+  </main>
+
+  <div class='translate-tooltip hidden' id='translateTip' aria-live='polite'></div>
+
+  <script src='assets/site-config.js'></script>
+  <script type='module' src='assets/reader.js'></script>
+</body>
+</html>

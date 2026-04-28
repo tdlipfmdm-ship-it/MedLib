@@ -1,0 +1,48 @@
+﻿<!doctype html>
+<html lang="tk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kitap katalogy | Lukmançylyk sanly kitaphanasy</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Mazmuna geç</a>
+  <header class="hero">
+    <div class="hero-in">
+      <h1>Lukmançylyk kitap katalogy</h1>
+      <p>Kitaplary gözleg, dil we lukmançylyk ugry boýunça tiz tapyň.</p>
+      <nav class="nav">
+        <a href="index.html">Baş sahypa</a>
+        <a href="books.html">Kitaplar</a>
+        <a href="categories.html">Lukmançylyk ugurlary</a>
+        <a href="languages.html">Diller</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap" id="mainContent">
+    <section class="panel">
+      <h2>Katalog</h2>
+    </section>
+
+    <section class="panel">
+      <div class="filters">
+        <input id="q" type="text" placeholder="Kitap ady, awtor, ýyl, lukmançylyk ugry boýunça gözleg...">
+        <select id="l"><option value="">Ähli diller</option></select>
+        <select id="c"><option value="">Ähli lukmançylyk ugurlary</option></select>
+        <button id="r" type="button">Arassala</button>
+      </div>
+      <div class="result" id="res">Netije: 0 kitap</div>
+    </section>
+
+    <section class="grid" id="grid"></section>
+    <div class="footer">Täzelenme: <span data-updated-at>—</span></div>
+  </main>
+
+  <script src="assets/site-config.js"></script>
+  <script src="assets/catalog.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
+

@@ -1,0 +1,80 @@
+﻿<!doctype html>
+<html lang="tk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lukmançylyk sanly kitaphanasy</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Mazmuna geç</a>
+  <header class="hero">
+    <div class="hero-in">
+      <h1>Lukmançylyk sanly kitaphanasy</h1>
+      <p>Lukmançylyk ugurlary boýunça sanly edebiýatlara resmi we amatly elýeterlilik.</p>
+      <nav class="nav">
+        <a href="index.html">Baş sahypa</a>
+        <a href="books.html">Kitaplar</a>
+        <a href="categories.html">Lukmançylyk ugurlary</a>
+        <a href="languages.html">Diller</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap" id="mainContent">
+    <section class="panel">
+      <h2>Resmi maglumat merkezi</h2>
+      <p>Bu portal lukmançylyk boýunça ygtybarly elektron fondy tertipli görnüşde hödürleýär.</p>
+    </section>
+
+    <section class="panel">
+      <div class="stats" id="statsGrid"></div>
+    </section>
+
+    <section class="panel home-categories-panel">
+      <div class="home-categories-head">
+        <h2>Lukmançylyk ugurlary</h2>
+        <a class="home-categories-all" href="categories.html">Ählisini gör</a>
+      </div>
+      <p>Lukmançylyk ugurlarynyň ählisi: 69 ugur.</p>
+      <div class="home-categories-grid" id="homeCategoriesGrid" aria-busy="true"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Saýlanan kitaplar</h2>
+    </section>
+
+    <section class="panel shelf-panel" id="book-shelves">
+      <div class="shelf-head">
+        <h2>Kitap tekjeleri</h2>
+        <p>Soňky görülen we saýlanan kitaplar bir bölümde jemlenýär.</p>
+      </div>
+      <div class="shelves">
+        <section class="shelf-box">
+          <h3>Soňky görülen kitaplar</h3>
+          <div class="shelf-grid" id="recentBooks"></div>
+          <p class="shelf-empty" id="recentEmpty">Häzirlikçe maglumat ýok.</p>
+        </section>
+        <section class="shelf-box">
+          <h3>Saýlanan kitaplar</h3>
+          <div class="shelf-grid" id="favoriteBooks"></div>
+          <p class="shelf-empty" id="favoriteEmpty">Häzirlikçe maglumat ýok.</p>
+        </section>
+      </div>
+    </section>
+
+    <section class="grid" id="featuredGrid"></section>
+
+    <section class="panel">
+      <p><a id="allBooksLink" href="books.html">Ähli kitaplar</a> sahypasyna geçiň.</p>
+    </section>
+
+    <div class="footer">Täzelenme: <span data-updated-at>—</span></div>
+  </main>
+
+  <script src="assets/site-config.js"></script>
+  <script src="assets/catalog.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
+

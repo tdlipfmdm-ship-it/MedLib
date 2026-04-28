@@ -1,0 +1,10 @@
+node_modules/
+.env
+.DS_Store
+assets/data/library.source.json
+assets/pdf-map.json
+BooksDB/
+reports/
+.tmp_pdf_opt/
+.tmp_tools/
+.deploy/
