@@ -8,6 +8,7 @@
 
   var KEY_USERS = "medlib_users_v1";
   var KEY_SESSION = "medlib_session_v1";
+  var KEY_REMEMBERED_LOGIN = "medlib_remembered_login_v1";
   var KEY_RECENT_PREFIX = "medlib_recent_books_v1:";
   var KEY_FAVORITES_PREFIX = "medlib_favorites_v1:";
 
@@ -86,6 +87,34 @@
   function removeKey(key) {
     try {
       localStorage.removeItem(key);
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  function readSessionJson(key, fallback) {
+    try {
+      var raw = sessionStorage.getItem(key);
+      if (!raw) return fallback;
+      return JSON.parse(raw);
+    } catch (_e) {
+      return fallback;
+    }
+  }
+
+  function writeSessionJson(key, value) {
+    try {
+      sessionStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  function removeSessionKey(key) {
+    try {
+      sessionStorage.removeItem(key);
       return true;
     } catch (_e) {
       return false;
@@ -250,6 +279,11 @@
       /^[a-z0-9._-]{3,32}$/.test(username) ||
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username)
     );
+  }
+
+  function isValidRegisterPassword(password) {
+    var value = String(password || "");
+    return value.length >= 6 && /[a-z]/.test(value) && /[A-Z]/.test(value) && !/\s/.test(value);
   }
 
   function buildSubscription(role, fromTime, months) {
@@ -489,16 +523,37 @@
   }
 
   function getSession() {
-    return readJson(KEY_SESSION, null);
+    return readJson(KEY_SESSION, null) || readSessionJson(KEY_SESSION, null);
   }
 
-  function setSession(user) {
+  function setSession(user, remember) {
     if (!user || !user.id) return false;
-    return writeJson(KEY_SESSION, { userId: user.id, at: now() });
+    var session = { userId: user.id, at: now(), remembered: remember !== false };
+    removeKey(KEY_SESSION);
+    removeSessionKey(KEY_SESSION);
+    return remember === false
+      ? writeSessionJson(KEY_SESSION, session)
+      : writeJson(KEY_SESSION, session);
   }
 
   function clearSession() {
     removeKey(KEY_SESSION);
+    removeSessionKey(KEY_SESSION);
+  }
+
+  function getRememberedLogin() {
+    var remembered = readJson(KEY_REMEMBERED_LOGIN, null);
+    return remembered && remembered.username ? remembered : null;
+  }
+
+  function setRememberedLogin(username) {
+    var key = normalizeUsername(username);
+    if (!key) return false;
+    return writeJson(KEY_REMEMBERED_LOGIN, { username: key, at: now() });
+  }
+
+  function clearRememberedLogin() {
+    removeKey(KEY_REMEMBERED_LOGIN);
   }
 
   function getCurrentUser() {
@@ -536,8 +591,12 @@
     if (isAdminUsername(username)) {
       return { ok: false, message: "Bu email administrator üçin bellenen." };
     }
-    if (password.length < 6) {
-      return { ok: false, message: "Açar söz azyndan 6 harp bolmaly." };
+    if (!isValidRegisterPassword(password)) {
+      return {
+        ok: false,
+        message:
+          "Açar söz azyndan 6 harp, azyndan 1 kiçi harp, 1 uly harp bolmaly we boşluk bolmaly däl.",
+      };
     }
     if (findUserByUsername(username)) {
       return { ok: false, message: "Bu ulanyjy ady eyyam bar." };
@@ -550,6 +609,15 @@
       id: randomId(),
       fullName: fullName,
       username: username,
+      firstName: clean(payload.firstName),
+      lastName: clean(payload.lastName),
+      email: username,
+      audience: clean(payload.audience) || "reader",
+      profession: clean(payload.profession),
+      organization: clean(payload.organization),
+      country: clean(payload.country),
+      newsletter: Boolean(payload.newsletter),
+      termsAcceptedAt: payload.termsAccepted ? createdAt : 0,
       role: role,
       passwordHash: hashPassword(password),
       createdAt: createdAt,
@@ -567,7 +635,7 @@
     return { ok: true, user: user };
   }
 
-  function loginUser(username, password) {
+  function loginUser(username, password, remember) {
     var user = findUserByUsername(username);
     if (!user) {
       return { ok: false, message: "Ulanyjy tapylmady." };
@@ -576,11 +644,16 @@
       return { ok: false, message: "Açar söz ýalňyş." };
     }
 
-    if (!setSession(user)) {
+    if (!setSession(user, remember !== false)) {
       return {
         ok: false,
         message: "Sessiya yazyp bolmady. Browser storage rugsatyny barla.",
       };
+    }
+    if (remember === false) {
+      clearRememberedLogin();
+    } else {
+      setRememberedLogin(user.username);
     }
     fire("medlib:auth-updated");
     return { ok: true, user: user };
@@ -2001,10 +2074,18 @@
     var msg = document.getElementById("loginMsg");
     var userInput = document.getElementById("loginUsername");
     var passInput = document.getElementById("loginPassword");
+    var rememberInput = document.getElementById("loginRemember");
+    var remembered = getRememberedLogin();
+
+    if (remembered && userInput && !userInput.value) {
+      userInput.value = remembered.username;
+      if (rememberInput) rememberInput.checked = true;
+    }
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      var res = loginUser(userInput.value, passInput.value);
+      var remember = rememberInput ? rememberInput.checked : true;
+      var res = loginUser(userInput.value, passInput.value, remember);
       if (!res.ok) {
         setMessage(msg, res.message, false);
         return;
@@ -2023,29 +2104,160 @@
     var msg = document.getElementById("registerMsg");
     var roleSelect = document.getElementById("regRole");
     var current = getCurrentUser();
+    var steps = Array.prototype.slice.call(
+      form.querySelectorAll("[data-register-step]")
+    );
+    var indicators = Array.prototype.slice.call(
+      document.querySelectorAll("[data-step-indicator]")
+    );
+    var currentStep = 1;
 
     if (roleSelect) {
       var roleField = roleSelect.closest("label");
       if (roleField) roleField.remove();
     }
 
+    function field(id) {
+      return document.getElementById(id);
+    }
+
+    function fieldValue(id) {
+      var node = field(id);
+      return node ? clean(node.value) : "";
+    }
+
+    function getAudience() {
+      var selected = form.querySelector("input[name='regAudience']:checked");
+      return selected ? selected.value : "reader";
+    }
+
+    function setRegisterStep(step, keepMessage) {
+      currentStep = Math.max(1, Math.min(step, steps.length || 1));
+      steps.forEach(function (panel) {
+        var panelStep = Number(panel.getAttribute("data-register-step"));
+        panel.classList.toggle("hidden", panelStep !== currentStep);
+      });
+      indicators.forEach(function (item) {
+        var itemStep = Number(item.getAttribute("data-step-indicator"));
+        item.classList.toggle("is-active", itemStep === currentStep);
+        item.classList.toggle("is-done", itemStep < currentStep);
+      });
+      if (!keepMessage) setMessage(msg, "", true);
+    }
+
+    function validateRegisterStep(step) {
+      if (step === 1 && steps.length) {
+        var firstName = fieldValue("regFirstName");
+        var lastName = fieldValue("regLastName");
+        var email = normalizeUsername(fieldValue("regEmail"));
+        var confirmEmail = normalizeUsername(fieldValue("regConfirmEmail"));
+        var password = field("regPassword") ? field("regPassword").value : "";
+        var confirm = field("regConfirmPassword")
+          ? field("regConfirmPassword").value
+          : "";
+
+        if (firstName.length < 2 || lastName.length < 2) {
+          setMessage(msg, "Ady we familiýasy azyndan 2 harp bolmaly.", false);
+          return false;
+        }
+        if (!isValidUsername(email) || email.indexOf("@") < 0) {
+          setMessage(msg, "Dogry email salgysyny giriziň.", false);
+          return false;
+        }
+        if (email !== confirmEmail) {
+          setMessage(msg, "Email salgylary gabat gelenok.", false);
+          return false;
+        }
+        if (isAdminUsername(email)) {
+          setMessage(msg, "Bu email administrator üçin bellenen.", false);
+          return false;
+        }
+        if (!isValidRegisterPassword(password)) {
+          setMessage(
+            msg,
+            "Açar söz azyndan 6 harp, 1 kiçi harp, 1 uly harp bolmaly we boşluk bolmaly däl.",
+            false
+          );
+          return false;
+        }
+        if (password !== confirm) {
+          setMessage(msg, "Açar sözler gabat gelenok.", false);
+          return false;
+        }
+      }
+
+      if (step === 2 && steps.length && !fieldValue("regCountry")) {
+        setMessage(msg, "Ýurdy saýlaň.", false);
+        return false;
+      }
+
+      if (step === 3 && steps.length) {
+        var terms = field("regTerms");
+        if (terms && !terms.checked) {
+          setMessage(msg, "Dowam etmek üçin şertleri tassyklaň.", false);
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    form.querySelectorAll("[data-reg-next]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        if (validateRegisterStep(currentStep)) {
+          setRegisterStep(currentStep + 1);
+        }
+      });
+    });
+
+    form.querySelectorAll("[data-reg-back]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        setRegisterStep(currentStep - 1);
+      });
+    });
+
+    if (steps.length) {
+      setRegisterStep(1);
+    }
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      var fullName = document.getElementById("regFullName").value;
-      var username = document.getElementById("regUsername").value;
-      var password = document.getElementById("regPassword").value;
-      var confirm = document.getElementById("regConfirmPassword").value;
+      for (var i = 1; i <= (steps.length || 1); i++) {
+        if (!validateRegisterStep(i)) {
+          if (steps.length) setRegisterStep(i, true);
+          return;
+        }
+      }
 
-      if (password !== confirm) {
+      var firstName = fieldValue("regFirstName");
+      var lastName = fieldValue("regLastName");
+      var fullName =
+        clean(firstName + " " + lastName) ||
+        (field("regFullName") ? field("regFullName").value : "");
+      var username = fieldValue("regEmail") || fieldValue("regUsername");
+      var password = field("regPassword") ? field("regPassword").value : "";
+      var confirm = field("regConfirmPassword")
+        ? field("regConfirmPassword").value
+        : "";
+
+      if (!steps.length && password !== confirm) {
         setMessage(msg, "Açar sözler gabat gelenok.", false);
         return;
       }
 
       var res = registerUser({
         fullName: fullName,
+        firstName: firstName,
+        lastName: lastName,
         username: username,
         password: password,
+        audience: getAudience(),
+        profession: fieldValue("regProfession"),
+        organization: fieldValue("regOrganization"),
+        country: fieldValue("regCountry"),
+        newsletter: Boolean(field("regNewsletter") && field("regNewsletter").checked),
+        termsAccepted: Boolean(field("regTerms") && field("regTerms").checked),
         role: "reader",
       });
 
@@ -2057,9 +2269,10 @@
       if (roleAtLeast(current, "admin")) {
         setMessage(msg, "Okyjy hasaby döredildi.", true);
         form.reset();
+        if (steps.length) setRegisterStep(1);
         fire("medlib:auth-updated");
       } else {
-        if (!setSession(res.user)) {
+        if (!setSession(res.user, true)) {
           setMessage(
             msg,
             "Sessiýa ýazyp bolmady. Brauzer storage rugsadyny barla.",
@@ -2067,6 +2280,7 @@
           );
           return;
         }
+        setRememberedLogin(res.user.username);
         fire("medlib:auth-updated");
         setMessage(msg, "Registrasiýa tamam. Ugrukdyrylýar...", true);
         location.href = toRoot("account.html");

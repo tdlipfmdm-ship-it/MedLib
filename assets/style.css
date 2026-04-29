@@ -1121,10 +1121,117 @@ button:active {
   font-size: 14px;
 }
 
+.auth-form fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.auth-form legend {
+  margin-bottom: 10px;
+  color: #15445b;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+}
+
 .auth-form button {
   width: auto;
   justify-self: start;
   min-width: 170px;
+}
+
+.auth-stepper {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0;
+  padding: 0;
+}
+
+.auth-stepper li {
+  display: grid;
+  gap: 4px;
+  min-height: 58px;
+  align-content: center;
+  padding: 9px 10px;
+  border: 1px solid #c8dae5;
+  border-radius: 10px;
+  background: #f3f8fb;
+  color: #557588;
+  font-weight: 800;
+}
+
+.auth-stepper li span {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.auth-stepper li.is-active {
+  border-color: #6aa0bb;
+  background: #e2f2fa;
+  color: #0f4f6a;
+}
+
+.auth-stepper li.is-done {
+  border-color: #b5d7c7;
+  background: #e8f5ef;
+  color: #1f6b4d;
+}
+
+.auth-form-wizard {
+  gap: 12px;
+}
+
+.register-step {
+  display: grid;
+  gap: 10px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.form-grid.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.choice-card,
+.checkbox-line {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+
+.choice-card {
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid #c8dae5;
+  border-radius: 10px;
+  background: #f7fbfe;
+}
+
+.choice-card input,
+.checkbox-line input {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
 }
 
 .msg {
@@ -1365,6 +1472,10 @@ button:active {
     align-items: flex-start;
     flex-direction: column;
   }
+
+  .form-grid.two {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 520px) {
@@ -1385,6 +1496,14 @@ button:active {
 
   .nav a {
     padding: 8px 10px;
+  }
+
+  .auth-stepper {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-stepper li {
+    min-height: 0;
   }
 
   .filters,
