@@ -820,7 +820,7 @@
     if (supported.indexOf(page) < 0) return;
 
     if (page === "book.html") {
-      fetchLibrary("index")
+      fetchLibrary("index", DETAIL_FETCH_TIMEOUT_MS)
         .then(function (indexData) {
           renderPage(indexData);
           return fetchLibrary("full", DETAIL_FETCH_TIMEOUT_MS)
