@@ -1067,6 +1067,12 @@ button:active {
   color: #705636;
 }
 
+.reader-link.is-expired {
+  border-color: #dcaaaa;
+  background: linear-gradient(165deg, #fae5e5, #f3d4d4);
+  color: #8a3434;
+}
+
 .auth-box {
   display: inline-flex;
   align-items: center;

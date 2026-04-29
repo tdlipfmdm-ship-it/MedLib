@@ -19,8 +19,11 @@
   var ADMIN_SUBSCRIPTION_EXPIRES_AT = Date.UTC(2100, 0, 1);
   var lazyFavoriteObserver = null;
 
-  var ROLE_ORDER = { reader: 1, editor: 2, admin: 3 };
-  var ROLE_LABEL = { reader: "Okyjy", editor: "Redaktor", admin: "Admin" };
+  var ADMIN_USERNAME = "tdlipfmdm@gmail.com";
+  var ADMIN_PASSWORD_HASH = "aea7dae6";
+  var ADMIN_FULL_NAME = "Administrator";
+  var ROLE_ORDER = { reader: 1, admin: 2 };
+  var ROLE_LABEL = { guest: "Myhman", reader: "Okyjy", admin: "Administrator" };
   var SITE_NAME = "Lukmançylyk sanly kitaphanasy";
   var ROOT_PAGE_COPY = {
     "index.html": {
@@ -52,7 +55,7 @@
     "register.html": {
       title: "Hasap döretmek",
       heading: "Täze hasap açmak",
-      lead: "Lukmançylyk sanly kitaphanasyna ulanyjy hasabyny dörediň.",
+      lead: "Täze okyjy hasaby 30 gün okamak hukugy bilen döredilýär.",
     },
     "account.html": {
       title: "Hasap",
@@ -238,6 +241,17 @@
     return clean(value).toLowerCase();
   }
 
+  function isAdminUsername(username) {
+    return normalizeUsername(username) === ADMIN_USERNAME;
+  }
+
+  function isValidUsername(username) {
+    return (
+      /^[a-z0-9._-]{3,32}$/.test(username) ||
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username)
+    );
+  }
+
   function buildSubscription(role, fromTime, months) {
     var startAt = Number(fromTime) > 0 ? Number(fromTime) : now();
     var monthCount = Number(months) > 0 ? Number(months) : 1;
@@ -303,9 +317,21 @@
         return;
       }
 
+      var username = normalizeUsername(user.username);
+      if (!username) {
+        changed = true;
+        return;
+      }
+      if (username !== user.username) {
+        changed = true;
+      }
+
       var passwordHash = user.passwordHash;
       if (!passwordHash && user.password) {
         passwordHash = hashPassword(user.password);
+        changed = true;
+      }
+      if (user.password) {
         changed = true;
       }
 
@@ -316,6 +342,21 @@
 
       var role = ROLE_ORDER[user.role] ? user.role : "reader";
       if (role !== user.role) {
+        changed = true;
+      }
+
+      if (isAdminUsername(username)) {
+        if (
+          role !== "admin" ||
+          passwordHash !== ADMIN_PASSWORD_HASH ||
+          clean(user.fullName) !== ADMIN_FULL_NAME
+        ) {
+          changed = true;
+        }
+        role = "admin";
+        passwordHash = ADMIN_PASSWORD_HASH;
+      } else if (role === "admin") {
+        role = "reader";
         changed = true;
       }
 
@@ -340,11 +381,21 @@
       if (role === "admin" && subscriptionExpiresAt < ADMIN_SUBSCRIPTION_EXPIRES_AT) {
         subscriptionExpiresAt = ADMIN_SUBSCRIPTION_EXPIRES_AT;
         changed = true;
+      } else if (
+        role !== "admin" &&
+        subscriptionExpiresAt >= ADMIN_SUBSCRIPTION_EXPIRES_AT
+      ) {
+        subscriptionExpiresAt = subscriptionStartAt + ONE_MONTH_MS;
+        changed = true;
       }
 
       normalized.push(
         Object.assign({}, user, {
-          username: normalizeUsername(user.username),
+          fullName: isAdminUsername(username)
+            ? ADMIN_FULL_NAME
+            : clean(user.fullName) || username,
+          username: username,
+          password: undefined,
           role: role,
           passwordHash: passwordHash,
           createdAt: createdAt,
@@ -365,32 +416,60 @@
     return writeJson(KEY_USERS, users || []);
   }
 
-  function countAdmins(users) {
-    return (users || []).filter(function (u) {
-      return u.role === "admin";
-    }).length;
+  function makeFixedAdmin(existing) {
+    var createdAt =
+      existing && Number(existing.createdAt) > 0 ? Number(existing.createdAt) : now();
+    var startAt =
+      existing && Number(existing.subscriptionStartAt) > 0
+        ? Number(existing.subscriptionStartAt)
+        : createdAt;
+
+    return Object.assign({}, existing || {}, {
+      id: existing && existing.id ? existing.id : randomId(),
+      fullName: ADMIN_FULL_NAME,
+      username: ADMIN_USERNAME,
+      role: "admin",
+      passwordHash: ADMIN_PASSWORD_HASH,
+      createdAt: createdAt,
+      subscriptionStartAt: startAt,
+      subscriptionExpiresAt: ADMIN_SUBSCRIPTION_EXPIRES_AT,
+    });
   }
 
   function ensureSeedUsers() {
     var users = getUsers();
-    if (!users.length) {
-      users = [
-        {
-          id: randomId(),
-          fullName: "Administrator",
-          username: "admin",
-          role: "admin",
-          passwordHash: hashPassword("admin123"),
-          createdAt: now(),
-        },
-      ];
-      setUsers(users);
-      return;
+    var fixedAdmin = null;
+    var nextUsers = [];
+    var changed = false;
+
+    users.forEach(function (user) {
+      if (isAdminUsername(user.username)) {
+        if (!fixedAdmin) {
+          fixedAdmin = makeFixedAdmin(user);
+          nextUsers.push(fixedAdmin);
+          if (JSON.stringify(fixedAdmin) !== JSON.stringify(user)) changed = true;
+        } else {
+          changed = true;
+        }
+        return;
+      }
+
+      if (user.role === "admin") {
+        nextUsers.push(Object.assign({}, user, { role: "reader" }));
+        changed = true;
+        return;
+      }
+
+      nextUsers.push(user);
+    });
+
+    if (!fixedAdmin) {
+      nextUsers.unshift(makeFixedAdmin(null));
+      changed = true;
     }
 
-    if (countAdmins(users) === 0) {
-      users[0].role = "admin";
-      setUsers(users);
+    if (changed) {
+      setUsers(nextUsers);
     }
   }
 
@@ -442,26 +521,26 @@
     var fullName = clean(payload.fullName);
     var username = normalizeUsername(payload.username);
     var password = String(payload.password || "");
-    var role = String(payload.role || "reader").toLowerCase();
+    var role = "reader";
 
     if (fullName.length < 2) {
       return { ok: false, message: "Doly ady azyndan 2 harp bolmaly." };
     }
-    if (!/^[a-z0-9._-]{3,32}$/.test(username)) {
+    if (!isValidUsername(username)) {
       return {
         ok: false,
-        message: "Ulanyjy ady 3-32 harp we [a-z, 0-9, ., _, -] bolmaly.",
+        message:
+          "Ulanyjy ady email ýa-da 3-32 harp we [a-z, 0-9, ., _, -] bolmaly.",
       };
+    }
+    if (isAdminUsername(username)) {
+      return { ok: false, message: "Bu email administrator üçin bellenen." };
     }
     if (password.length < 6) {
       return { ok: false, message: "Açar söz azyndan 6 harp bolmaly." };
     }
     if (findUserByUsername(username)) {
       return { ok: false, message: "Bu ulanyjy ady eyyam bar." };
-    }
-
-    if (!ROLE_ORDER[role]) {
-      role = "reader";
     }
 
     var users = getUsers();
@@ -524,7 +603,7 @@
     var user = getCurrentUser();
     if (!user) return false;
     if (isSubscriptionActive(user)) return true;
-    alert(message || "Abuna wagty gutardy. Hasap sahypasynda uzaldyn.");
+    alert(message || "Abuna wagty gutardy. Uzaltmak üçin administratora ýüz tutuň.");
     location.href = toRoot("account.html");
     return false;
   }
@@ -976,6 +1055,7 @@
   function syncReaderAccessLinks() {
     var user = getCurrentUser();
     var loginHref = toRoot("login.html") + "?next=" + encodeURIComponent(location.href);
+    var accountHref = toRoot("account.html");
 
     document.querySelectorAll(".reader-actions .reader-link").forEach(function (link) {
       if (!link || link.classList.contains("is-disabled")) return;
@@ -986,11 +1066,19 @@
 
       if (!user) {
         link.classList.add("is-guest");
+        link.classList.remove("is-expired");
         link.setAttribute("aria-disabled", "true");
         link.setAttribute("href", loginHref);
         link.textContent = "Giriş edip oka";
+      } else if (!isSubscriptionActive(user)) {
+        link.classList.remove("is-guest");
+        link.classList.add("is-expired");
+        link.setAttribute("href", accountHref);
+        link.removeAttribute("aria-disabled");
+        link.textContent = "Abuna uzalt";
       } else {
         link.classList.remove("is-guest");
+        link.classList.remove("is-expired");
         link.removeAttribute("aria-disabled");
         var original = link.getAttribute("data-reader-href") || "";
         if (original) {
@@ -1023,12 +1111,17 @@
         var badge = document.createElement("span");
         badge.className = "auth-badge";
         var subText = roleAtLeast(user, "admin")
-          ? "unlimited"
+          ? "çäksiz"
           : isSubscriptionActive(user)
-            ? getSubscriptionDaysLeft(user) + "d"
-            : "expired";
+            ? getSubscriptionDaysLeft(user) + " gün"
+            : "möhleti geçen";
         badge.textContent =
-          user.username + " (" + ROLE_LABEL[user.role] + " | " + subText + ")";
+          user.username +
+          " (" +
+          (ROLE_LABEL[user.role] || user.role) +
+          " | " +
+          subText +
+          ")";
         box.appendChild(badge);
 
         box.appendChild(createNavLink(toRoot("account.html"), "Hasap", "auth-link"));
@@ -1931,8 +2024,9 @@
     var roleSelect = document.getElementById("regRole");
     var current = getCurrentUser();
 
-    if (roleSelect && !ROLE_ORDER[roleSelect.value]) {
-      roleSelect.value = "reader";
+    if (roleSelect) {
+      var roleField = roleSelect.closest("label");
+      if (roleField) roleField.remove();
     }
 
     form.addEventListener("submit", function (e) {
@@ -1942,7 +2036,6 @@
       var username = document.getElementById("regUsername").value;
       var password = document.getElementById("regPassword").value;
       var confirm = document.getElementById("regConfirmPassword").value;
-      var role = roleSelect ? roleSelect.value : "reader";
 
       if (password !== confirm) {
         setMessage(msg, "Açar sözler gabat gelenok.", false);
@@ -1953,7 +2046,7 @@
         fullName: fullName,
         username: username,
         password: password,
-        role: role,
+        role: "reader",
       });
 
       if (!res.ok) {
@@ -1962,9 +2055,8 @@
       }
 
       if (roleAtLeast(current, "admin")) {
-        setMessage(msg, "Ulanyjy hasaby döredildi.", true);
+        setMessage(msg, "Okyjy hasaby döredildi.", true);
         form.reset();
-        if (roleSelect) roleSelect.value = "reader";
         fire("medlib:auth-updated");
       } else {
         if (!setSession(res.user)) {
@@ -2010,7 +2102,7 @@
       return {
         state: "active",
         label: "Çäksiz",
-        details: "Admin",
+        details: "Çäklendirilmedik administrator hukugy",
       };
     }
 
@@ -2024,7 +2116,7 @@
         formatDate(user.subscriptionExpiresAt) +
         " | " +
         daysLeft +
-        " gün",
+        " gün | Uzaltmak administrator tarapyndan edilýär",
     };
   }
 
@@ -2033,6 +2125,8 @@
     if (!tbody) return;
 
     var users = getUsers().sort(function (a, b) {
+      if (a.role === "admin" && b.role !== "admin") return -1;
+      if (a.role !== "admin" && b.role === "admin") return 1;
       return a.username.localeCompare(b.username);
     });
 
@@ -2048,18 +2142,10 @@
       tdUser.textContent = u.username;
 
       var tdRole = document.createElement("td");
-      var select = document.createElement("select");
-      ["reader", "editor", "admin"].forEach(function (r) {
-        var option = document.createElement("option");
-        option.value = r;
-        option.textContent = ROLE_LABEL[r] || r;
-        if (u.role === r) option.selected = true;
-        select.appendChild(option);
-      });
-      if (u.id === current.id) {
-        select.disabled = true;
-      }
-      tdRole.appendChild(select);
+      var roleBadge = document.createElement("span");
+      roleBadge.className = "role-pill";
+      roleBadge.textContent = ROLE_LABEL[u.role] || u.role;
+      tdRole.appendChild(roleBadge);
 
       var tdSubscription = document.createElement("td");
       var summary = getSubscriptionSummary(u);
@@ -2074,51 +2160,27 @@
       tdSubscription.appendChild(subNote);
 
       var tdActions = document.createElement("td");
-      var saveBtn = document.createElement("button");
-      saveBtn.type = "button";
-      saveBtn.textContent = "Roly ýaz";
-      saveBtn.className = "mini-btn";
-
-      saveBtn.addEventListener("click", function () {
-        var nextRole = select.value;
-        var all = getUsers();
-        var idx = all.findIndex(function (x) {
-          return x.id === u.id;
+      if (u.role === "admin") {
+        var protectedNote = document.createElement("span");
+        protectedNote.className = "sub-note";
+        protectedNote.textContent = "Goralýan ýeke-täk admin";
+        tdActions.appendChild(protectedNote);
+      } else {
+        var renewBtn = document.createElement("button");
+        renewBtn.type = "button";
+        renewBtn.textContent = "+1 aý";
+        renewBtn.className = "mini-btn";
+        renewBtn.addEventListener("click", function () {
+          var renewed = renewSubscriptionByUserId(u.id, 1);
+          if (!renewed) {
+            alert("Abunany uzaldyp bolmady. Storage barla.");
+            return;
+          }
+          fire("medlib:auth-updated");
+          renderAdminUsers(current);
         });
-        if (idx < 0) return;
+        tdActions.appendChild(renewBtn);
 
-        if (all[idx].role === "admin" && nextRole !== "admin" && countAdmins(all) <= 1) {
-          alert("In azy bir admin galmaly.");
-          select.value = "admin";
-          return;
-        }
-
-        all[idx].role = nextRole;
-        if (!setUsers(all)) {
-          alert("Storage yazylmady. Browser sazlamany barla.");
-          return;
-        }
-        fire("medlib:auth-updated");
-      });
-
-      tdActions.appendChild(saveBtn);
-
-      var renewBtn = document.createElement("button");
-      renewBtn.type = "button";
-      renewBtn.textContent = "+1 aý";
-      renewBtn.className = "mini-btn";
-      renewBtn.addEventListener("click", function () {
-        var renewed = renewSubscriptionByUserId(u.id, 1);
-        if (!renewed) {
-          alert("Abunany uzaldyp bolmady. Storage barla.");
-          return;
-        }
-        fire("medlib:auth-updated");
-        renderAdminUsers(current);
-      });
-      tdActions.appendChild(renewBtn);
-
-      if (u.id !== current.id) {
         var delBtn = document.createElement("button");
         delBtn.type = "button";
         delBtn.textContent = "Poz";
@@ -2129,8 +2191,8 @@
             return x.id === u.id;
           });
           if (!target) return;
-          if (target.role === "admin" && countAdmins(all) <= 1) {
-            alert("Sonky admin pozulyp bilinmez.");
+          if (target.role === "admin") {
+            alert("Administrator pozulyp bilinmez.");
             return;
           }
           if (!confirm("Ulanyjyny pozmak isleýärsiňizmi?")) return;
@@ -2193,12 +2255,7 @@
         accountSubHintNode.textContent = summary.details;
       }
       if (renewSelfBtn) {
-        if (roleAtLeast(freshUser, "admin")) {
-          renewSelfBtn.classList.add("hidden");
-        } else {
-          renewSelfBtn.classList.remove("hidden");
-          renewSelfBtn.textContent = "+1 aý abuna uzalt";
-        }
+        renewSelfBtn.classList.add("hidden");
       }
     };
     renderMySubscription();
@@ -2212,27 +2269,13 @@
     }
 
     var editorTools = document.getElementById("editorTools");
-    var userCanUseEditorTools =
-      roleAtLeast(user, "editor") &&
-      (roleAtLeast(user, "admin") || isSubscriptionActive(user));
+    var userCanUseEditorTools = roleAtLeast(user, "admin");
     if (editorTools && userCanUseEditorTools) {
       editorTools.classList.remove("hidden");
       var exportBtn = document.getElementById("exportFavBtn");
       if (exportBtn) {
         exportBtn.addEventListener("click", exportFavorites);
       }
-    }
-
-    if (renewSelfBtn && !roleAtLeast(user, "admin")) {
-      renewSelfBtn.addEventListener("click", function () {
-        var renewed = renewSubscriptionByUserId(user.id, 1);
-        if (!renewed) {
-          alert("Abunany uzaldyp bolmady. Storage barla.");
-          return;
-        }
-        fire("medlib:auth-updated");
-        location.reload();
-      });
     }
 
     var adminTools = document.getElementById("adminTools");
