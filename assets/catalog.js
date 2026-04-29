@@ -8,6 +8,7 @@
   var CACHE_KEY_PREFIX = "medlib_library_cache_v4:";
   var CACHE_TTL_MS = 24 * 60 * 60 * 1000;
   var FETCH_TIMEOUT_MS = 12000;
+  var DETAIL_FETCH_TIMEOUT_MS = 60000;
   var inflightLibraryPromiseByScope = {};
   var SITE_CONFIG = window.MEDLIB_CONFIG || {};
   var PDF_READER_ENABLED = SITE_CONFIG.pdfReaderEnabled !== false;
@@ -579,7 +580,7 @@
 
     host.innerHTML =
       "<aside class='dc'><img src='" +
-      escapeHtml(toRoot((book.cover && book.cover.full) || "")) +
+      escapeHtml(toRoot((book.cover && (book.cover.full || book.cover.thumb)) || "")) +
       "' alt='" +
       escapeHtml(clean(book.title || "Kitap")) +
       "'></aside>" +
@@ -675,7 +676,7 @@
     });
   }
 
-  function fetchLibrary(scope) {
+  function fetchLibrary(scope, timeoutMs) {
     var effectiveScope = scope === "full" ? "full" : "index";
     if (inflightLibraryPromiseByScope[effectiveScope]) {
       return inflightLibraryPromiseByScope[effectiveScope];
@@ -689,13 +690,13 @@
     var requestPrimary = function () {
       return withTimeout(function (signal) {
         return fetchJsonFile(getDataFileForScope(effectiveScope), signal);
-      }, FETCH_TIMEOUT_MS);
+      }, timeoutMs || FETCH_TIMEOUT_MS);
     };
 
     var requestFallback = function () {
       return withTimeout(function (signal) {
         return fetchJsonFile(getDataFileForScope("full"), signal);
-      }, FETCH_TIMEOUT_MS);
+      }, timeoutMs || FETCH_TIMEOUT_MS);
     };
 
     inflightLibraryPromiseByScope[effectiveScope] = requestPrimary()
@@ -817,6 +818,25 @@
     var page = getPageFile();
     var supported = ["", "index.html", "books.html", "categories.html", "languages.html", "book.html"];
     if (supported.indexOf(page) < 0) return;
+
+    if (page === "book.html") {
+      fetchLibrary("index")
+        .then(function (indexData) {
+          renderPage(indexData);
+          return fetchLibrary("full", DETAIL_FETCH_TIMEOUT_MS)
+            .then(renderPage)
+            .catch(function () {
+              // The index data is enough to keep the detail page usable on slow networks.
+            });
+        })
+        .catch(function (indexError) {
+          fetchLibrary("full", DETAIL_FETCH_TIMEOUT_MS).then(renderPage).catch(function (fullError) {
+            renderErrorState(fullError || indexError);
+          });
+        });
+      return;
+    }
+
     var scope = getDataScopeForPage(page);
 
     fetchLibrary(scope)
