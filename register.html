@@ -1,26 +1,73 @@
 ﻿<!doctype html><html lang='tk'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Hasap d&#246;retmek | Lukman&#231;ylyk sanly kitaphanasy</title><link rel='stylesheet' href='assets/style.css'></head><body>
 <a class='skip-link' href='#mainContent'>Mazmuna geç</a>
-<header class='hero'><div class='hero-in'><h1>T&#228;ze hasap a&#231;mak</h1><p>Lukman&#231;ylyk sanly kitaphanasyna ulanyjy hasabyny d&#246;redi&#328;.</p><nav class='nav'><a href='index.html'>Ba&#351; sahypa</a><a href='books.html'>Kitaplar</a><a href='categories.html'>Lukmançylyk ugurlary</a><a href='languages.html'>Diller</a></nav></div></header>
+<header class='hero'><div class='hero-in'><h1>T&#228;ze hasap a&#231;mak</h1><p>Lukman&#231;ylyk sanly kitaphanasyna ulanyjy hasabyny d&#246;redi&#328;.</p><nav class='nav'><a href='index.html'>Ba&#351; sahypa</a><a href='books.html'>Kitaplar</a><a href='categories.html'>Lukmançylyk ugurlary</a><a href='languages.html'>Diller</a><a href='help.html'>Gollanma</a></nav></div></header>
 <main class='wrap auth-page' id='mainContent'>
 <section class='panel'>
   <h2>Hasap d&#246;retmek</h2>
-  <p>Maglumatlary doly dolduryp hasap a&#231;y&#328;.</p>
-  <form id='registerForm' class='auth-form'>
-    <label>Doly ady<input id='regFullName' type='text' autocomplete='name' required></label>
-    <label>Ulanyjy ady<input id='regUsername' type='text' autocomplete='username' required></label>
-    <label>A&#231;ar s&#246;z<input id='regPassword' type='password' autocomplete='new-password' required></label>
-    <label>A&#231;ar s&#246;zi t&#228;zeden<input id='regConfirmPassword' type='password' autocomplete='new-password' required></label>
-    <label>Rol
-      <select id='regRole'>
-        <option value='reader'>Okyjy</option>
-        <option value='editor'>Redaktor</option>
-        <option value='admin'>Admin</option>
-      </select>
-    </label>
-    <button type='submit'>Hasap d&#246;ret</button>
+  <p>Okyjy hasabyny 3 gysga ädimde açyň.</p>
+  <p class='guide-callout'><a href='help.html'>Registrasiýa etmezden öň hasap döretmek, saýty ulanmak we PDF okaýjy boýunça resmi gollanma bilen tanyşmak</a></p>
+  <ol class='auth-stepper' aria-label='Registrasiýa ädimleri'>
+    <li data-step-indicator='1'>1<span>Şahsy maglumat</span></li>
+    <li data-step-indicator='2'>2<span>Okaýyş profili</span></li>
+    <li data-step-indicator='3'>3<span>Tassyklama</span></li>
+  </ol>
+  <form id='registerForm' class='auth-form auth-form-wizard' novalidate>
+    <fieldset class='register-step' data-register-step='1'>
+      <legend>Şahsy maglumat</legend>
+      <div class='choice-grid'>
+        <label class='choice-card'><input name='regAudience' type='radio' value='reader' checked> Okyjy</label>
+      </div>
+      <div class='form-grid two'>
+        <label>Ady<input id='regFirstName' type='text' autocomplete='given-name' required></label>
+        <label>Familiýasy<input id='regLastName' type='text' autocomplete='family-name' required></label>
+      </div>
+      <label>Email<input id='regEmail' type='email' autocomplete='email' required></label>
+      <label>Emaili täzeden<input id='regConfirmEmail' type='email' autocomplete='email' required></label>
+      <label>A&#231;ar s&#246;z<input id='regPassword' type='password' autocomplete='new-password' required></label>
+      <p class='muted-note'>Açar söz azyndan 6 harp bolmaly: azyndan 1 kiçi harp, 1 uly harp we boşluksyz.</p>
+      <label>A&#231;ar s&#246;zi t&#228;zeden<input id='regConfirmPassword' type='password' autocomplete='new-password' required></label>
+      <div class='form-actions'><button type='button' data-reg-next>Step 2 &gt;</button></div>
+    </fieldset>
+
+    <fieldset class='register-step hidden' data-register-step='2'>
+      <legend>Okaýyş profili</legend>
+      <div class='form-grid two'>
+        <label>Hünäri
+          <select id='regProfession'>
+            <option value=''>Saýlaň</option>
+            <option value='student'>Talyp</option>
+            <option value='doctor'>Lukman</option>
+            <option value='nurse'>Şepagat uýasy</option>
+            <option value='teacher'>Mugallym</option>
+            <option value='researcher'>Ylmy işgär</option>
+            <option value='other'>Başga</option>
+          </select>
+        </label>
+        <label>Ýurt
+          <select id='regCountry' required>
+            <option value='Türkmenistan' selected>Türkmenistan</option>
+            <option value='Azerbaijan'>Azerbaijan</option>
+            <option value='Kazakhstan'>Kazakhstan</option>
+            <option value='Turkey'>Turkey</option>
+            <option value='Uzbekistan'>Uzbekistan</option>
+            <option value='Other'>Başga</option>
+          </select>
+        </label>
+      </div>
+      <label>Iş/okuw ýeri<input id='regOrganization' type='text' autocomplete='organization'></label>
+      <label class='checkbox-line'><input id='regNewsletter' type='checkbox'> Täzelikler we täze kitaplar barada habar almak isleýärin</label>
+      <div class='form-actions'><button type='button' data-reg-back>&lt; Yza</button><button type='button' data-reg-next>Step 3 &gt;</button></div>
+    </fieldset>
+
+    <fieldset class='register-step hidden' data-register-step='3'>
+      <legend>Tassyklama</legend>
+      <p class='muted-note'>Hasap awtomatiki Okyjy roluny alýar we 30 gün okamak hukugy bilen açylýar. Möhlet soň administrator tarapyndan uzaldylýar.</p>
+      <label class='checkbox-line'><input id='regTerms' type='checkbox' required> <span><a href='help.html'>Saýtyň ulanyş şertleri we okyjy düzgüni</a> bilen tanyşdym hem-de kabul edýärin</span></label>
+      <div class='form-actions'><button type='button' data-reg-back>&lt; Yza</button><button type='submit'>Hasap d&#246;ret</button></div>
+    </fieldset>
     <div id='registerMsg' class='msg'></div>
   </form>
 </section>
 </main>
-<script src='assets/site-config.js'></script><script src='assets/app.js' defer></script></body></html>
+<script src='assets/site-config.js'></script><script src='assets/i18n.js?v=20260607-i18n'></script><script src='assets/app.js?v=20260612-backend-status-v1' defer></script></body></html>
 

@@ -1,6 +1,6 @@
 ﻿<!doctype html><html lang='tk'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Hasap | Lukman&#231;ylyk sanly kitaphanasy</title><link rel='stylesheet' href='assets/style.css'></head><body>
 <a class='skip-link' href='#accountPage'>Mazmuna geç</a>
-<header class='hero'><div class='hero-in'><h1>Ulanyjy hasaby</h1><p>Profili&#328;iz, abuna maglumatlary we rugsatlar.</p><nav class='nav'><a href='index.html'>Ba&#351; sahypa</a><a href='books.html'>Kitaplar</a><a href='categories.html'>Lukmançylyk ugurlary</a><a href='languages.html'>Diller</a></nav></div></header>
+<header class='hero'><div class='hero-in'><h1>Ulanyjy hasaby</h1><p>Profili&#328;iz, abuna maglumatlary we rugsatlar.</p><nav class='nav'><a href='index.html'>Ba&#351; sahypa</a><a href='books.html'>Kitaplar</a><a href='categories.html'>Lukmançylyk ugurlary</a><a href='languages.html'>Diller</a><a href='help.html'>Gollanma</a></nav></div></header>
 <main class='wrap auth-page' id='accountPage'>
 <section class='panel'>
   <h2>Profil</h2>
@@ -11,18 +11,31 @@
     <div class='account-item'><b>Abuna:</b> <span class='sub-pill' id='accountSubscription'>-</span></div>
     <div class='account-item'><small class='sub-note' id='accountSubscriptionHint'>-</small></div>
   </div>
-  <div class='account-actions'><button id='renewSelfBtn' type='button'>+1 a&#253; uzalt</button> <button id='logoutBtn' type='button'>&#199;ykyş et</button></div>
+  <div class='account-actions'><button id='renewSelfBtn' type='button' class='hidden'>+1 a&#253; uzalt</button> <button id='logoutBtn' type='button'>&#199;ykyş et</button></div>
 </section>
 
 <section class='panel hidden' id='editorTools'>
-  <h2>Redaktor gurallary</h2>
+  <h2>Administrator gurallary</h2>
   <p>Sa&#253;lanan kitaplary JSON formatynda &#253;&#252;kl&#228;p aly&#328;.</p>
   <button id='exportFavBtn' type='button'>Sa&#253;lananlary eksport et</button>
 </section>
 
 <section class='panel hidden' id='adminTools'>
   <h2>Admin dolandyry&#351;</h2>
-  <p>Ulanyjylary&#328; rollaryny &#252;&#253;tgedi&#328; &#253;a-da pozu&#328;.</p>
+  <p>Okyjylary&#328; okamak m&#246;hletini a&#253;lyk uzaldy&#328; &#253;a-da gerekmejek hasaplary pozu&#328;.</p>
+  <div class='github-sync' id='githubSyncPanel'>
+    <h3>GitHub-da goralan saklama</h3>
+    <p class='muted-note'>Admin tokeni diňe şu brauzer sessiýasynda saklanýar. Ulanyjy maglumatlaryny private GitHub repo faýly bilen sinhronlaň.</p>
+    <label>GitHub fine-grained token
+      <input id='githubTokenInput' type='password' autocomplete='off' placeholder='github_pat_...'>
+    </label>
+    <div class='form-actions'>
+      <button id='githubLoadUsersBtn' type='button'>GitHub-den ýükle</button>
+      <button id='githubSaveUsersBtn' type='button'>GitHub-a ýaz</button>
+      <button id='githubForgetTokenBtn' type='button'>Tokeni aýyr</button>
+    </div>
+    <div id='githubSyncMsg' class='msg'></div>
+  </div>
   <div class='user-table-wrap'>
     <table class='user-table'>
       <thead><tr><th>Ady</th><th>Ulanyjy ady</th><th>Rol</th><th>Abuna</th><th>Hereket</th></tr></thead>
@@ -31,5 +44,5 @@
   </div>
 </section>
 </main>
-<script src='assets/site-config.js'></script><script src='assets/app.js' defer></script></body></html>
+<script src='assets/site-config.js'></script><script src='assets/i18n.js?v=20260607-i18n'></script><script src='assets/app.js?v=20260612-backend-status-v1' defer></script></body></html>
 

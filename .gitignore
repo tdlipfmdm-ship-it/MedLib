@@ -8,3 +8,4 @@ reports/
 .tmp_pdf_opt/
 .tmp_tools/
 .deploy/
+server-data/
